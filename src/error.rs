@@ -35,6 +35,9 @@ pub enum Error {
     #[error("TOML serialization error: {0}")]
     TomlSerError(#[from] toml::ser::Error),
 
+    #[error("JSON error: {0}")]
+    JsonError(#[from] serde_json::Error),
+
     #[error("No profile detected and no default profile set")]
     NoProfileDetected,
 

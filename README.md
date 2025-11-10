@@ -8,9 +8,10 @@
 
 - 🔐 **Secure Storage**: API keys stored in macOS Keychain (Linux/Windows support coming soon)
 - 🔄 **Multiple Profiles**: Manage personal, work, and project-specific Claude accounts
-- 🎯 **Auto-Detection**: Automatically detect profiles from `.claude-profile` files
+- 🎯 **Auto-Detection**: Automatically detect profiles from `.claude-profile` files (✨ NEW!)
 - ✨ **Simple CLI**: Intuitive commands for profile management
-- 🧪 **Well-Tested**: Comprehensive test coverage
+- 📦 **Smart Caching**: Performance-optimized profile detection with intelligent caching
+- 🧪 **Well-Tested**: Comprehensive test coverage (26 passing tests)
 
 ## Installation
 

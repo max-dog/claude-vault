@@ -45,4 +45,13 @@ pub enum Commands {
         /// Profile name
         name: String,
     },
+
+    /// Detect profile for current directory
+    Detect,
+
+    /// Initialize project with a profile
+    Init {
+        /// Profile name
+        name: String,
+    },
 }

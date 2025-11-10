@@ -1,5 +1,5 @@
 use crate::cli::commands::{Cli, Commands};
-use crate::core::ProfileManager;
+use crate::core::{detect_profile, init_profile, ProfileManager};
 use crate::error::Result;
 use dialoguer::{Confirm, Password};
 
@@ -10,6 +10,8 @@ pub fn handle_command(cli: Cli) -> Result<()> {
         Commands::Show { name } => handle_show(name),
         Commands::Remove { name, yes } => handle_remove(name, yes),
         Commands::Default { name } => handle_default(name),
+        Commands::Detect => handle_detect(),
+        Commands::Init { name } => handle_init(name),
     }
 }
 
@@ -100,5 +102,37 @@ fn handle_remove(name: String, yes: bool) -> Result<()> {
 fn handle_default(name: String) -> Result<()> {
     ProfileManager::set_default(&name)?;
     println!("✓ Default profile set to '{}'", name);
+    Ok(())
+}
+
+fn handle_detect() -> Result<()> {
+    match detect_profile() {
+        Ok(profile) => {
+            println!("Detected profile: {}", profile);
+            Ok(())
+        }
+        Err(crate::error::Error::NoProfileDetected) => {
+            println!("No profile detected.");
+            println!("Suggestions:");
+            println!("  - Run 'claude-vault init <profile>' to set up this project");
+            println!("  - Run 'claude-vault default <profile>' to set a default profile");
+            Err(crate::error::Error::NoProfileDetected)
+        }
+        Err(e) => Err(e),
+    }
+}
+
+fn handle_init(name: String) -> Result<()> {
+    let profile_file = init_profile(&name)?;
+
+    println!("✓ Initialized project with profile '{}'", name);
+    println!("  Created: {}", profile_file.display());
+
+    // Check if .gitignore was updated
+    let current_dir = std::env::current_dir()?;
+    if current_dir.join(".git").exists() {
+        println!("  Updated: .gitignore");
+    }
+
     Ok(())
 }
