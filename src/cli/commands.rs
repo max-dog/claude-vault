@@ -78,6 +78,16 @@ pub enum Commands {
         /// Shell type
         shell: Shell,
     },
+
+    /// Import OAuth token from Claude Code
+    Import {
+        /// Import type (currently only "oauth" supported)
+        import_type: String,
+
+        /// Profile name (optional, uses "default" if not specified)
+        #[arg(short, long)]
+        profile: Option<String>,
+    },
 }
 
 #[derive(Debug, Clone, Copy, ValueEnum)]

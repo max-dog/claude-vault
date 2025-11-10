@@ -1,23 +1,41 @@
 use crate::error::{Error, Result};
+use crate::types::CredentialType;
 use keyring::Entry;
 
 const SERVICE_NAME: &str = "claude-vault";
+const OAUTH_SERVICE_NAME: &str = "claude-vault-oauth";
 
-/// Store API key in system keychain
-pub fn store(profile: &str, api_key: &str) -> Result<()> {
-    validate_api_key(api_key)?;
+/// Store credential in system keychain
+pub fn store(profile: &str, credential: &str) -> Result<()> {
+    validate_api_key(credential)?;
 
     let entry = Entry::new(SERVICE_NAME, profile)
         .map_err(|e| Error::KeychainError(e.to_string()))?;
 
     entry
-        .set_password(api_key)
+        .set_password(credential)
         .map_err(|e| Error::KeychainError(e.to_string()))?;
 
     Ok(())
 }
 
-/// Retrieve API key from system keychain
+/// Store OAuth token in system keychain
+pub fn store_oauth(profile: &str, token: &str) -> Result<()> {
+    if token.is_empty() {
+        return Err(Error::ConfigError("OAuth token cannot be empty".to_string()));
+    }
+
+    let entry = Entry::new(OAUTH_SERVICE_NAME, profile)
+        .map_err(|e| Error::KeychainError(e.to_string()))?;
+
+    entry
+        .set_password(token)
+        .map_err(|e| Error::KeychainError(e.to_string()))?;
+
+    Ok(())
+}
+
+/// Retrieve credential from system keychain (API key)
 pub fn get(profile: &str) -> Result<String> {
     let entry = Entry::new(SERVICE_NAME, profile)
         .map_err(|e| Error::KeychainError(e.to_string()))?;
@@ -31,6 +49,30 @@ pub fn get(profile: &str) -> Result<String> {
     Ok(key)
 }
 
+/// Retrieve OAuth token from system keychain
+pub fn get_oauth(profile: &str) -> Result<String> {
+    let entry = Entry::new(OAUTH_SERVICE_NAME, profile)
+        .map_err(|e| Error::KeychainError(e.to_string()))?;
+
+    let token = entry.get_password().map_err(|e| {
+        Error::KeychainError(format!("Failed to get OAuth token for profile '{}': {}", profile, e))
+    })?;
+
+    if token.is_empty() {
+        return Err(Error::KeychainError("OAuth token is empty".to_string()));
+    }
+
+    Ok(token)
+}
+
+/// Retrieve credential based on type
+pub fn get_by_type(profile: &str, cred_type: CredentialType) -> Result<String> {
+    match cred_type {
+        CredentialType::ApiKey => get(profile),
+        CredentialType::OAuth => get_oauth(profile),
+    }
+}
+
 /// Delete API key from system keychain
 pub fn delete(profile: &str) -> Result<()> {
     let entry = Entry::new(SERVICE_NAME, profile)
@@ -41,6 +83,26 @@ pub fn delete(profile: &str) -> Result<()> {
         .map_err(|e| Error::KeychainError(e.to_string()))?;
 
     Ok(())
+}
+
+/// Delete OAuth token from system keychain
+pub fn delete_oauth(profile: &str) -> Result<()> {
+    let entry = Entry::new(OAUTH_SERVICE_NAME, profile)
+        .map_err(|e| Error::KeychainError(e.to_string()))?;
+
+    entry
+        .delete_password()
+        .map_err(|e| Error::KeychainError(e.to_string()))?;
+
+    Ok(())
+}
+
+/// Delete credential based on type
+pub fn delete_by_type(profile: &str, cred_type: CredentialType) -> Result<()> {
+    match cred_type {
+        CredentialType::ApiKey => delete(profile),
+        CredentialType::OAuth => delete_oauth(profile),
+    }
 }
 
 /// Validate Claude API key format

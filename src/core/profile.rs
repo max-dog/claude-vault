@@ -1,12 +1,13 @@
 use crate::core::{config, keychain};
 use crate::error::Result;
-use crate::types::Profile;
+use crate::types::{CredentialType, Profile};
 use crate::utils::validate_profile_name;
+use chrono::{DateTime, Utc};
 
 pub struct ProfileManager;
 
 impl ProfileManager {
-    /// Add a new profile
+    /// Add a new profile with API key
     pub fn add(name: &str, description: Option<String>, api_key: &str) -> Result<Profile> {
         validate_profile_name(name)?;
 
@@ -25,14 +26,49 @@ impl ProfileManager {
         Ok(profile)
     }
 
+    /// Add a new profile with OAuth token
+    pub fn add_oauth(
+        name: &str,
+        description: Option<String>,
+        oauth_token: &str,
+        expires_at: Option<DateTime<Utc>>,
+    ) -> Result<Profile> {
+        validate_profile_name(name)?;
+
+        let mut config = config::load()?;
+
+        let mut profile = Profile::new_with_type(
+            name.to_string(),
+            description,
+            CredentialType::OAuth,
+        );
+
+        profile.expires_at = expires_at;
+
+        config.add_profile(profile.clone())?;
+
+        // Store OAuth token in keychain
+        keychain::store_oauth(name, oauth_token)?;
+
+        // Save config
+        config::save(&config)?;
+
+        Ok(profile)
+    }
+
     /// Remove a profile
     pub fn remove(name: &str) -> Result<()> {
         let mut config = config::load()?;
 
+        // Get profile to determine credential type
+        let profile = config.find_profile(name)
+            .ok_or_else(|| crate::error::Error::ProfileNotFound(name.to_string()))?
+            .clone();
+
         config.remove_profile(name)?;
 
-        // Delete from keychain
-        keychain::delete(name)?;
+        // Delete from keychain based on credential type
+        keychain::delete_by_type(name, profile.credential_type)?;
 
         // Save config
         config::save(&config)?;

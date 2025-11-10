@@ -2,14 +2,42 @@ use chrono::{DateTime, Utc};
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 
+#[derive(Debug, Clone, Copy, Serialize, Deserialize, PartialEq, Eq)]
+#[serde(rename_all = "lowercase")]
+pub enum CredentialType {
+    #[serde(rename = "api-key")]
+    ApiKey,
+    #[serde(rename = "oauth")]
+    OAuth,
+}
+
+impl Default for CredentialType {
+    fn default() -> Self {
+        CredentialType::ApiKey
+    }
+}
+
+impl std::fmt::Display for CredentialType {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            CredentialType::ApiKey => write!(f, "API Key"),
+            CredentialType::OAuth => write!(f, "OAuth Token"),
+        }
+    }
+}
+
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
 pub struct Profile {
     pub name: String,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub description: Option<String>,
+    #[serde(default)]
+    pub credential_type: CredentialType,
     pub created_at: DateTime<Utc>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub last_used: Option<DateTime<Utc>>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub expires_at: Option<DateTime<Utc>>,
     #[serde(default)]
     pub metadata: HashMap<String, String>,
 }
@@ -19,14 +47,50 @@ impl Profile {
         Self {
             name,
             description,
+            credential_type: CredentialType::ApiKey,
             created_at: Utc::now(),
             last_used: None,
+            expires_at: None,
+            metadata: HashMap::new(),
+        }
+    }
+
+    pub fn new_with_type(
+        name: String,
+        description: Option<String>,
+        credential_type: CredentialType,
+    ) -> Self {
+        Self {
+            name,
+            description,
+            credential_type,
+            created_at: Utc::now(),
+            last_used: None,
+            expires_at: None,
             metadata: HashMap::new(),
         }
     }
 
     pub fn touch(&mut self) {
         self.last_used = Some(Utc::now());
+    }
+
+    pub fn is_expired(&self) -> bool {
+        if let Some(expires_at) = self.expires_at {
+            Utc::now() > expires_at
+        } else {
+            false
+        }
+    }
+
+    pub fn expires_soon(&self) -> bool {
+        if let Some(expires_at) = self.expires_at {
+            let now = Utc::now();
+            let time_until_expiry = expires_at - now;
+            time_until_expiry.num_hours() < 24 && time_until_expiry.num_hours() >= 0
+        } else {
+            false
+        }
     }
 }
 

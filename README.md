@@ -6,11 +6,12 @@
 
 ## Features
 
-- 🔐 **Secure Storage**: API keys stored in macOS Keychain (Linux/Windows support coming soon)
+- 🔐 **Secure Storage**: API keys and OAuth tokens stored in macOS Keychain (Linux/Windows support coming soon)
+- 🎫 **OAuth Support**: Import and manage OAuth tokens from Claude Code for subscription accounts (✨ NEW!)
 - 🔄 **Multiple Profiles**: Manage personal, work, and project-specific Claude accounts
 - 🎯 **Auto-Detection**: Automatically detect profiles from `.claude-profile` files
 - ⚡ **Command Execution**: Run commands with profile credentials via `exec` and `env`
-- 🐚 **Shell Completion**: Tab completion for Bash, Zsh, and Fish (✨ NEW!)
+- 🐚 **Shell Completion**: Tab completion for Bash, Zsh, and Fish
 - ✨ **Simple CLI**: Intuitive commands for profile management
 - 📦 **Smart Caching**: Performance-optimized profile detection with intelligent caching
 - 🧪 **Well-Tested**: Comprehensive test coverage (26 passing tests)
@@ -84,6 +85,16 @@ claude-vault list
 claude-vault default personal
 ```
 
+### 4. Import OAuth Token (for Claude Pro/Max Subscriptions)
+
+```bash
+# First, login to Claude Code
+claude /login
+
+# Then import the OAuth token
+claude-vault import oauth --profile subscription
+```
+
 ## Usage
 
 ### Add a New Profile
@@ -130,6 +141,28 @@ claude-vault remove work --yes
 
 ```bash
 claude-vault default personal
+```
+
+### Import OAuth Token (for Subscription Accounts)
+
+If you have a Claude Pro/Max subscription and use Claude Code, you can import your OAuth token:
+
+```bash
+# First, login to Claude Code to get a fresh token
+claude /login
+
+# Import the OAuth token to a profile
+claude-vault import oauth --profile subscription
+
+# Or use default profile name if not specified
+claude-vault import oauth
+```
+
+**Note**: OAuth tokens expire periodically. When your token expires, simply run `claude /login` in Claude Code and re-import:
+
+```bash
+claude /login
+claude-vault import oauth --profile subscription
 ```
 
 ### Execute Commands with Profile
@@ -182,13 +215,25 @@ default_profile = "personal"
 [[profiles]]
 name = "personal"
 description = "Personal projects"
+credential_type = "api-key"
 created_at = "2025-11-10T12:00:00Z"
+
+[[profiles]]
+name = "subscription"
+description = "Claude Pro subscription"
+credential_type = "oauth"
+created_at = "2025-11-10T14:30:00Z"
+expires_at = "2025-11-17T14:30:00Z"
 ```
 
-API keys are securely stored in your system keychain:
-- **macOS**: Keychain Access
+Credentials are securely stored in your system keychain:
+- **macOS**: Keychain Access (separate entries for API keys and OAuth tokens)
 - **Linux**: Secret Service API (coming soon)
 - **Windows**: Windows Credential Manager (coming soon)
+
+The tool supports two types of credentials:
+- **API Keys**: For Pay-as-you-go accounts (format: `sk-ant-...`)
+- **OAuth Tokens**: For Claude Pro/Max subscription accounts (imported from Claude Code)
 
 ## Development
 
@@ -225,7 +270,8 @@ cargo run -- list
 - [x] `exec` command for command execution
 - [x] `env` command for shell integration
 - [x] Shell completion scripts (Bash, Zsh, Fish)
-- [ ] Linux support
+- [x] OAuth token support for subscription accounts
+- [ ] Linux support (for OAuth tokens)
 - [ ] Windows support
 - [ ] Homebrew formula
 - [ ] Usage statistics

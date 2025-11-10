@@ -14,6 +14,8 @@ Comprehensive guide for using `claude-vault` in various scenarios.
 
 ### Setting Up Your First Profile
 
+**Option 1: Using an API Key (Pay-as-you-go)**
+
 ```bash
 # Add your personal profile
 claude-vault add personal
@@ -25,6 +27,47 @@ claude-vault default personal
 # Verify it works
 claude-vault detect
 # Output: Detected profile: personal
+```
+
+**Option 2: Importing OAuth Token (Subscription Accounts)**
+
+If you have a Claude Pro/Max subscription:
+
+```bash
+# First, login to Claude Code to get a fresh token
+claude /login
+
+# Import the OAuth token
+claude-vault import oauth --profile subscription
+
+# Set it as default
+claude-vault default subscription
+
+# Verify it works
+claude-vault detect
+# Output: Detected profile: subscription
+
+# Check token status
+claude-vault show subscription
+# Output includes:
+#   Type: OAuth Token
+#   Status: ✓ Valid
+#   Expires: 2025-11-17T14:30:00Z
+```
+
+**OAuth Token Management**
+
+OAuth tokens expire periodically (typically every 7-30 days). When your token expires:
+
+```bash
+# Re-login to Claude Code
+claude /login
+
+# Re-import the token (overwrites existing)
+claude-vault import oauth --profile subscription
+
+# Verify the new token
+claude-vault show subscription
 ```
 
 ### Working with Multiple Profiles
