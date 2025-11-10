@@ -54,4 +54,22 @@ pub enum Commands {
         /// Profile name
         name: String,
     },
+
+    /// Execute command with profile credentials
+    Exec {
+        /// Profile name (optional, uses detected/default profile)
+        #[arg(short, long)]
+        profile: Option<String>,
+
+        /// Command to execute
+        #[arg(trailing_var_arg = true, allow_hyphen_values = true, required = true)]
+        command: Vec<String>,
+    },
+
+    /// Print environment variables for shell integration
+    Env {
+        /// Profile name (optional, uses detected/default profile)
+        #[arg(short, long)]
+        profile: Option<String>,
+    },
 }

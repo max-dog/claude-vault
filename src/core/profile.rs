@@ -80,4 +80,19 @@ impl ProfileManager {
 
         keychain::get(name)
     }
+
+    /// Update last_used timestamp for profile
+    pub fn update_last_used(name: &str) -> Result<()> {
+        let mut config = config::load()?;
+
+        // Find and update profile
+        let profile = config
+            .find_profile_mut(name)
+            .ok_or_else(|| crate::error::Error::ProfileNotFound(name.to_string()))?;
+
+        profile.touch();
+
+        config::save(&config)?;
+        Ok(())
+    }
 }

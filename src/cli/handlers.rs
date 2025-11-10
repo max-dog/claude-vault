@@ -2,6 +2,7 @@ use crate::cli::commands::{Cli, Commands};
 use crate::core::{detect_profile, init_profile, ProfileManager};
 use crate::error::Result;
 use dialoguer::{Confirm, Password};
+use std::process::Command;
 
 pub fn handle_command(cli: Cli) -> Result<()> {
     match cli.command {
@@ -12,6 +13,8 @@ pub fn handle_command(cli: Cli) -> Result<()> {
         Commands::Default { name } => handle_default(name),
         Commands::Detect => handle_detect(),
         Commands::Init { name } => handle_init(name),
+        Commands::Exec { profile, command } => handle_exec(profile, command),
+        Commands::Env { profile } => handle_env(profile),
     }
 }
 
@@ -135,4 +138,59 @@ fn handle_init(name: String) -> Result<()> {
     }
 
     Ok(())
+}
+
+fn handle_exec(profile_opt: Option<String>, command: Vec<String>) -> Result<()> {
+    // Resolve profile name
+    let profile_name = resolve_profile(profile_opt)?;
+
+    // Get API key from keychain
+    let api_key = crate::core::keychain::get(&profile_name)?;
+
+    // Update last_used timestamp
+    ProfileManager::update_last_used(&profile_name)?;
+
+    // Execute command with ANTHROPIC_API_KEY environment variable
+    if command.is_empty() {
+        return Err(crate::error::Error::ConfigError(
+            "No command specified".to_string(),
+        ));
+    }
+
+    let status = Command::new(&command[0])
+        .args(&command[1..])
+        .env("ANTHROPIC_API_KEY", api_key)
+        .status()
+        .map_err(|e| {
+            crate::error::Error::ConfigError(format!("Failed to execute command: {}", e))
+        })?;
+
+    // Exit with the same code as the child process
+    std::process::exit(status.code().unwrap_or(1));
+}
+
+fn handle_env(profile_opt: Option<String>) -> Result<()> {
+    // Resolve profile name
+    let profile_name = resolve_profile(profile_opt)?;
+
+    // Get API key from keychain
+    let api_key = crate::core::keychain::get(&profile_name)?;
+
+    // Print export statement for shell integration
+    println!("export ANTHROPIC_API_KEY=\"{}\"", api_key);
+    println!("# Profile: {}", profile_name);
+
+    Ok(())
+}
+
+/// Resolve profile name from option, detection, or default
+fn resolve_profile(profile_opt: Option<String>) -> Result<String> {
+    if let Some(name) = profile_opt {
+        // Verify profile exists
+        ProfileManager::get(&name)?;
+        Ok(name)
+    } else {
+        // Try to detect profile, fallback to default
+        detect_profile()
+    }
 }

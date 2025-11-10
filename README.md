@@ -99,6 +99,29 @@ claude-vault remove work --yes
 claude-vault default personal
 ```
 
+### Execute Commands with Profile
+
+```bash
+# Execute command with detected/default profile
+claude-vault exec claude --version
+
+# Execute command with specific profile
+claude-vault exec --profile work claude --model sonnet "Hello world"
+
+# Use in scripts
+claude-vault exec npm run test
+```
+
+### Export Environment Variables
+
+```bash
+# Export for shell integration
+eval $(claude-vault env)
+
+# Export specific profile
+eval $(claude-vault env --profile work)
+```
+
 ## Project-Specific Profiles
 
 Create a `.claude-profile` file in your project root:
@@ -165,9 +188,9 @@ cargo run -- list
 - [x] MVP: Core profile management
 - [x] macOS Keychain integration
 - [x] Basic CLI commands
-- [ ] Automatic profile detection (`.claude-profile`)
-- [ ] `exec` command for command execution
-- [ ] `env` command for shell integration
+- [x] Automatic profile detection (`.claude-profile`)
+- [x] `exec` command for command execution
+- [x] `env` command for shell integration
 - [ ] Linux support
 - [ ] Windows support
 - [ ] Shell completion scripts
