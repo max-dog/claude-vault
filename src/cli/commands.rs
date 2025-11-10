@@ -1,4 +1,4 @@
-use clap::{Parser, Subcommand};
+use clap::{Parser, Subcommand, ValueEnum};
 
 #[derive(Parser)]
 #[command(name = "claude-vault")]
@@ -72,4 +72,22 @@ pub enum Commands {
         #[arg(short, long)]
         profile: Option<String>,
     },
+
+    /// Generate shell completion scripts
+    Completion {
+        /// Shell type
+        shell: Shell,
+    },
+}
+
+#[derive(Debug, Clone, Copy, ValueEnum)]
+pub enum Shell {
+    /// Bash shell
+    Bash,
+    /// Zsh shell
+    Zsh,
+    /// Fish shell
+    Fish,
+    /// PowerShell
+    PowerShell,
 }

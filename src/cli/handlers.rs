@@ -1,7 +1,10 @@
-use crate::cli::commands::{Cli, Commands};
+use crate::cli::commands::{Cli, Commands, Shell};
 use crate::core::{detect_profile, init_profile, ProfileManager};
 use crate::error::Result;
+use clap::CommandFactory;
+use clap_complete::{generate, shells};
 use dialoguer::{Confirm, Password};
+use std::io;
 use std::process::Command;
 
 pub fn handle_command(cli: Cli) -> Result<()> {
@@ -15,6 +18,7 @@ pub fn handle_command(cli: Cli) -> Result<()> {
         Commands::Init { name } => handle_init(name),
         Commands::Exec { profile, command } => handle_exec(profile, command),
         Commands::Env { profile } => handle_env(profile),
+        Commands::Completion { shell } => handle_completion(shell),
     }
 }
 
@@ -193,4 +197,31 @@ fn resolve_profile(profile_opt: Option<String>) -> Result<String> {
         // Try to detect profile, fallback to default
         detect_profile()
     }
+}
+
+fn handle_completion(shell: Shell) -> Result<()> {
+    let mut cmd = Cli::command();
+    let bin_name = "claude-vault";
+
+    match shell {
+        Shell::Bash => {
+            generate(shells::Bash, &mut cmd, bin_name, &mut io::stdout());
+        }
+        Shell::Zsh => {
+            generate(shells::Zsh, &mut cmd, bin_name, &mut io::stdout());
+        }
+        Shell::Fish => {
+            generate(shells::Fish, &mut cmd, bin_name, &mut io::stdout());
+        }
+        Shell::PowerShell => {
+            generate(
+                shells::PowerShell,
+                &mut cmd,
+                bin_name,
+                &mut io::stdout(),
+            );
+        }
+    }
+
+    Ok(())
 }

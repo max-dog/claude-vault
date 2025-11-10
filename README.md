@@ -8,7 +8,9 @@
 
 - 🔐 **Secure Storage**: API keys stored in macOS Keychain (Linux/Windows support coming soon)
 - 🔄 **Multiple Profiles**: Manage personal, work, and project-specific Claude accounts
-- 🎯 **Auto-Detection**: Automatically detect profiles from `.claude-profile` files (✨ NEW!)
+- 🎯 **Auto-Detection**: Automatically detect profiles from `.claude-profile` files
+- ⚡ **Command Execution**: Run commands with profile credentials via `exec` and `env`
+- 🐚 **Shell Completion**: Tab completion for Bash, Zsh, and Fish (✨ NEW!)
 - ✨ **Simple CLI**: Intuitive commands for profile management
 - 📦 **Smart Caching**: Performance-optimized profile detection with intelligent caching
 - 🧪 **Well-Tested**: Comprehensive test coverage (26 passing tests)
@@ -28,6 +30,37 @@ sudo mv target/release/claude-vault /usr/local/bin/
 
 ```bash
 brew install claude-vault
+```
+
+### Shell Completion
+
+Enable tab completion for your shell:
+
+**Bash**
+```bash
+# Generate completion script
+claude-vault completion bash > ~/.local/share/bash-completion/completions/claude-vault
+
+# Or add to your ~/.bashrc
+echo 'eval "$(claude-vault completion bash)"' >> ~/.bashrc
+```
+
+**Zsh**
+```bash
+# Generate completion script
+claude-vault completion zsh > ~/.zsh/completions/_claude-vault
+
+# Or add to your ~/.zshrc
+echo 'eval "$(claude-vault completion zsh)"' >> ~/.zshrc
+
+# Make sure completion system is initialized
+echo 'autoload -Uz compinit && compinit' >> ~/.zshrc
+```
+
+**Fish**
+```bash
+# Generate completion script
+claude-vault completion fish > ~/.config/fish/completions/claude-vault.fish
 ```
 
 ## Quick Start
@@ -191,9 +224,9 @@ cargo run -- list
 - [x] Automatic profile detection (`.claude-profile`)
 - [x] `exec` command for command execution
 - [x] `env` command for shell integration
+- [x] Shell completion scripts (Bash, Zsh, Fish)
 - [ ] Linux support
 - [ ] Windows support
-- [ ] Shell completion scripts
 - [ ] Homebrew formula
 - [ ] Usage statistics
 - [ ] Team features

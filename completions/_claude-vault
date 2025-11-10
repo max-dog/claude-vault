@@ -1,0 +1,318 @@
+#compdef claude-vault
+
+autoload -U is-at-least
+
+_claude-vault() {
+    typeset -A opt_args
+    typeset -a _arguments_options
+    local ret=1
+
+    if is-at-least 5.2; then
+        _arguments_options=(-s -S -C)
+    else
+        _arguments_options=(-s -C)
+    fi
+
+    local context curcontext="$curcontext" state line
+    _arguments "${_arguments_options[@]}" : \
+'-h[Print help]' \
+'--help[Print help]' \
+'-V[Print version]' \
+'--version[Print version]' \
+":: :_claude-vault_commands" \
+"*::: :->claude-vault" \
+&& ret=0
+    case $state in
+    (claude-vault)
+        words=($line[1] "${words[@]}")
+        (( CURRENT += 1 ))
+        curcontext="${curcontext%:*:*}:claude-vault-command-$line[1]:"
+        case $line[1] in
+            (add)
+_arguments "${_arguments_options[@]}" : \
+'-d+[Profile description]:DESCRIPTION:_default' \
+'--description=[Profile description]:DESCRIPTION:_default' \
+'-h[Print help]' \
+'--help[Print help]' \
+':name -- Profile name:_default' \
+&& ret=0
+;;
+(list)
+_arguments "${_arguments_options[@]}" : \
+'-h[Print help]' \
+'--help[Print help]' \
+&& ret=0
+;;
+(show)
+_arguments "${_arguments_options[@]}" : \
+'-h[Print help]' \
+'--help[Print help]' \
+':name -- Profile name:_default' \
+&& ret=0
+;;
+(remove)
+_arguments "${_arguments_options[@]}" : \
+'-y[Skip confirmation prompt]' \
+'--yes[Skip confirmation prompt]' \
+'-h[Print help]' \
+'--help[Print help]' \
+':name -- Profile name:_default' \
+&& ret=0
+;;
+(default)
+_arguments "${_arguments_options[@]}" : \
+'-h[Print help]' \
+'--help[Print help]' \
+':name -- Profile name:_default' \
+&& ret=0
+;;
+(detect)
+_arguments "${_arguments_options[@]}" : \
+'-h[Print help]' \
+'--help[Print help]' \
+&& ret=0
+;;
+(init)
+_arguments "${_arguments_options[@]}" : \
+'-h[Print help]' \
+'--help[Print help]' \
+':name -- Profile name:_default' \
+&& ret=0
+;;
+(exec)
+_arguments "${_arguments_options[@]}" : \
+'-p+[Profile name (optional, uses detected/default profile)]:PROFILE:_default' \
+'--profile=[Profile name (optional, uses detected/default profile)]:PROFILE:_default' \
+'-h[Print help]' \
+'--help[Print help]' \
+'*::command -- Command to execute:_default' \
+&& ret=0
+;;
+(env)
+_arguments "${_arguments_options[@]}" : \
+'-p+[Profile name (optional, uses detected/default profile)]:PROFILE:_default' \
+'--profile=[Profile name (optional, uses detected/default profile)]:PROFILE:_default' \
+'-h[Print help]' \
+'--help[Print help]' \
+&& ret=0
+;;
+(completion)
+_arguments "${_arguments_options[@]}" : \
+'-h[Print help (see more with '\''--help'\'')]' \
+'--help[Print help (see more with '\''--help'\'')]' \
+':shell -- Shell type:((bash\:"Bash shell"
+zsh\:"Zsh shell"
+fish\:"Fish shell"
+power-shell\:"PowerShell"))' \
+&& ret=0
+;;
+(help)
+_arguments "${_arguments_options[@]}" : \
+":: :_claude-vault__help_commands" \
+"*::: :->help" \
+&& ret=0
+
+    case $state in
+    (help)
+        words=($line[1] "${words[@]}")
+        (( CURRENT += 1 ))
+        curcontext="${curcontext%:*:*}:claude-vault-help-command-$line[1]:"
+        case $line[1] in
+            (add)
+_arguments "${_arguments_options[@]}" : \
+&& ret=0
+;;
+(list)
+_arguments "${_arguments_options[@]}" : \
+&& ret=0
+;;
+(show)
+_arguments "${_arguments_options[@]}" : \
+&& ret=0
+;;
+(remove)
+_arguments "${_arguments_options[@]}" : \
+&& ret=0
+;;
+(default)
+_arguments "${_arguments_options[@]}" : \
+&& ret=0
+;;
+(detect)
+_arguments "${_arguments_options[@]}" : \
+&& ret=0
+;;
+(init)
+_arguments "${_arguments_options[@]}" : \
+&& ret=0
+;;
+(exec)
+_arguments "${_arguments_options[@]}" : \
+&& ret=0
+;;
+(env)
+_arguments "${_arguments_options[@]}" : \
+&& ret=0
+;;
+(completion)
+_arguments "${_arguments_options[@]}" : \
+&& ret=0
+;;
+(help)
+_arguments "${_arguments_options[@]}" : \
+&& ret=0
+;;
+        esac
+    ;;
+esac
+;;
+        esac
+    ;;
+esac
+}
+
+(( $+functions[_claude-vault_commands] )) ||
+_claude-vault_commands() {
+    local commands; commands=(
+'add:Add a new profile' \
+'list:List all profiles' \
+'show:Show profile details' \
+'remove:Remove a profile' \
+'default:Set default profile' \
+'detect:Detect profile for current directory' \
+'init:Initialize project with a profile' \
+'exec:Execute command with profile credentials' \
+'env:Print environment variables for shell integration' \
+'completion:Generate shell completion scripts' \
+'help:Print this message or the help of the given subcommand(s)' \
+    )
+    _describe -t commands 'claude-vault commands' commands "$@"
+}
+(( $+functions[_claude-vault__add_commands] )) ||
+_claude-vault__add_commands() {
+    local commands; commands=()
+    _describe -t commands 'claude-vault add commands' commands "$@"
+}
+(( $+functions[_claude-vault__completion_commands] )) ||
+_claude-vault__completion_commands() {
+    local commands; commands=()
+    _describe -t commands 'claude-vault completion commands' commands "$@"
+}
+(( $+functions[_claude-vault__default_commands] )) ||
+_claude-vault__default_commands() {
+    local commands; commands=()
+    _describe -t commands 'claude-vault default commands' commands "$@"
+}
+(( $+functions[_claude-vault__detect_commands] )) ||
+_claude-vault__detect_commands() {
+    local commands; commands=()
+    _describe -t commands 'claude-vault detect commands' commands "$@"
+}
+(( $+functions[_claude-vault__env_commands] )) ||
+_claude-vault__env_commands() {
+    local commands; commands=()
+    _describe -t commands 'claude-vault env commands' commands "$@"
+}
+(( $+functions[_claude-vault__exec_commands] )) ||
+_claude-vault__exec_commands() {
+    local commands; commands=()
+    _describe -t commands 'claude-vault exec commands' commands "$@"
+}
+(( $+functions[_claude-vault__help_commands] )) ||
+_claude-vault__help_commands() {
+    local commands; commands=(
+'add:Add a new profile' \
+'list:List all profiles' \
+'show:Show profile details' \
+'remove:Remove a profile' \
+'default:Set default profile' \
+'detect:Detect profile for current directory' \
+'init:Initialize project with a profile' \
+'exec:Execute command with profile credentials' \
+'env:Print environment variables for shell integration' \
+'completion:Generate shell completion scripts' \
+'help:Print this message or the help of the given subcommand(s)' \
+    )
+    _describe -t commands 'claude-vault help commands' commands "$@"
+}
+(( $+functions[_claude-vault__help__add_commands] )) ||
+_claude-vault__help__add_commands() {
+    local commands; commands=()
+    _describe -t commands 'claude-vault help add commands' commands "$@"
+}
+(( $+functions[_claude-vault__help__completion_commands] )) ||
+_claude-vault__help__completion_commands() {
+    local commands; commands=()
+    _describe -t commands 'claude-vault help completion commands' commands "$@"
+}
+(( $+functions[_claude-vault__help__default_commands] )) ||
+_claude-vault__help__default_commands() {
+    local commands; commands=()
+    _describe -t commands 'claude-vault help default commands' commands "$@"
+}
+(( $+functions[_claude-vault__help__detect_commands] )) ||
+_claude-vault__help__detect_commands() {
+    local commands; commands=()
+    _describe -t commands 'claude-vault help detect commands' commands "$@"
+}
+(( $+functions[_claude-vault__help__env_commands] )) ||
+_claude-vault__help__env_commands() {
+    local commands; commands=()
+    _describe -t commands 'claude-vault help env commands' commands "$@"
+}
+(( $+functions[_claude-vault__help__exec_commands] )) ||
+_claude-vault__help__exec_commands() {
+    local commands; commands=()
+    _describe -t commands 'claude-vault help exec commands' commands "$@"
+}
+(( $+functions[_claude-vault__help__help_commands] )) ||
+_claude-vault__help__help_commands() {
+    local commands; commands=()
+    _describe -t commands 'claude-vault help help commands' commands "$@"
+}
+(( $+functions[_claude-vault__help__init_commands] )) ||
+_claude-vault__help__init_commands() {
+    local commands; commands=()
+    _describe -t commands 'claude-vault help init commands' commands "$@"
+}
+(( $+functions[_claude-vault__help__list_commands] )) ||
+_claude-vault__help__list_commands() {
+    local commands; commands=()
+    _describe -t commands 'claude-vault help list commands' commands "$@"
+}
+(( $+functions[_claude-vault__help__remove_commands] )) ||
+_claude-vault__help__remove_commands() {
+    local commands; commands=()
+    _describe -t commands 'claude-vault help remove commands' commands "$@"
+}
+(( $+functions[_claude-vault__help__show_commands] )) ||
+_claude-vault__help__show_commands() {
+    local commands; commands=()
+    _describe -t commands 'claude-vault help show commands' commands "$@"
+}
+(( $+functions[_claude-vault__init_commands] )) ||
+_claude-vault__init_commands() {
+    local commands; commands=()
+    _describe -t commands 'claude-vault init commands' commands "$@"
+}
+(( $+functions[_claude-vault__list_commands] )) ||
+_claude-vault__list_commands() {
+    local commands; commands=()
+    _describe -t commands 'claude-vault list commands' commands "$@"
+}
+(( $+functions[_claude-vault__remove_commands] )) ||
+_claude-vault__remove_commands() {
+    local commands; commands=()
+    _describe -t commands 'claude-vault remove commands' commands "$@"
+}
+(( $+functions[_claude-vault__show_commands] )) ||
+_claude-vault__show_commands() {
+    local commands; commands=()
+    _describe -t commands 'claude-vault show commands' commands "$@"
+}
+
+if [ "$funcstack[1]" = "_claude-vault" ]; then
+    _claude-vault "$@"
+else
+    compdef _claude-vault claude-vault
+fi
