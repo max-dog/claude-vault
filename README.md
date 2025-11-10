@@ -231,13 +231,15 @@ cargo run -- list
 - [ ] Usage statistics
 - [ ] Team features
 
-## Architecture
+## Documentation
 
-See detailed architecture documentation in [`claudedocs/claude-vault/`](claudedocs/claude-vault/):
-- [Requirements](../claudedocs/claude-vault/requirements.md)
-- [Architecture](../claudedocs/claude-vault/architecture.md)
-- [MVP Roadmap](../claudedocs/claude-vault/mvp-roadmap.md)
-- [Implementation Guide](../claudedocs/claude-vault/implementation-guide.md)
+Comprehensive guides and best practices:
+
+- 📖 [Usage Guide](docs/USAGE_GUIDE.md) - Advanced usage scenarios and workflows
+- 🔌 [Claude Code Integration](docs/CLAUDE_CODE_INTEGRATION.md) - Integrate with Claude Code seamlessly
+- 🔧 [Troubleshooting](docs/TROUBLESHOOTING.md) - Common issues and solutions
+- ✨ [Best Practices](docs/BEST_PRACTICES.md) - Security and operational best practices
+- ❓ [FAQ](docs/FAQ.md) - Frequently asked questions
 
 ## Contributing
 
@@ -253,6 +255,6 @@ Inspired by [aws-vault](https://github.com/99designs/aws-vault) - the excellent 
 
 ---
 
-**Status**: 🚧 In Development (Phase 1 Complete)
+**Status**: ✨ MVP Complete - Ready for Use
 
 Built with Rust 🦀
