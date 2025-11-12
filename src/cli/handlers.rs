@@ -168,17 +168,13 @@ fn handle_exec(profile_opt: Option<String>, command: Vec<String>) -> Result<()> 
     // Resolve profile name
     let profile_name = resolve_profile(profile_opt)?;
 
+    // Ensure token is valid (auto-refresh if expired)
+    crate::core::ensure_token_valid(&profile_name)?;
+
     // Get profile to check credential type and expiration
     let profile = ProfileManager::get(&profile_name)?;
 
-    // Check if token is expired
-    if profile.is_expired() {
-        eprintln!("⚠️  Warning: Profile '{}' credentials have expired!", profile_name);
-        eprintln!("   Please refresh your credentials.");
-        return Err(crate::error::Error::ConfigError("Credentials expired".to_string()));
-    }
-
-    // Warn if expiring soon
+    // Warn if expiring soon (within 24 hours)
     if profile.expires_soon() {
         eprintln!("⚠️  Warning: Profile '{}' credentials expire soon (within 24 hours)", profile_name);
     }
@@ -212,13 +208,14 @@ fn handle_env(profile_opt: Option<String>) -> Result<()> {
     // Resolve profile name
     let profile_name = resolve_profile(profile_opt)?;
 
+    // Ensure token is valid (auto-refresh if expired)
+    crate::core::ensure_token_valid(&profile_name)?;
+
     // Get profile to check credential type and expiration
     let profile = ProfileManager::get(&profile_name)?;
 
-    // Warn if expired (but still export for user to handle)
-    if profile.is_expired() {
-        eprintln!("# Warning: Profile '{}' credentials have expired!", profile_name);
-    } else if profile.expires_soon() {
+    // Warn if expiring soon (within 24 hours)
+    if profile.expires_soon() {
         eprintln!("# Warning: Profile '{}' credentials expire soon", profile_name);
     }
 
@@ -285,16 +282,22 @@ fn handle_import(import_type: String, profile_opt: Option<String>) -> Result<()>
     println!("Profile: {}", profile_name);
 
     // Try to read OAuth token from Claude Code's keychain entry
-    // Claude Code uses "Claude" as service name and account name for OAuth tokens
-    let claude_code_service = "Claude";
-    let claude_code_account = "sessionKey";
+    // Claude Code uses "Claude Code-credentials" as service name and username as account
+    let claude_code_service = "Claude Code-credentials";
 
-    let entry = keyring::Entry::new(claude_code_service, claude_code_account)
+    // Get current username for keychain account
+    let username = std::env::var("USER")
+        .or_else(|_| std::env::var("USERNAME"))
+        .map_err(|_| crate::error::Error::ConfigError(
+            "Could not determine username. Please set USER or USERNAME environment variable.".to_string()
+        ))?;
+
+    let entry = keyring::Entry::new(claude_code_service, &username)
         .map_err(|e| crate::error::Error::KeychainError(format!(
             "Failed to access Claude Code keychain: {}", e
         )))?;
 
-    let oauth_token = entry
+    let credentials_json = entry
         .get_password()
         .map_err(|e| crate::error::Error::KeychainError(format!(
             "Failed to retrieve OAuth token from Claude Code.\n\
@@ -302,23 +305,77 @@ fn handle_import(import_type: String, profile_opt: Option<String>) -> Result<()>
              Error: {}", e
         )))?;
 
-    if oauth_token.is_empty() {
+    if credentials_json.is_empty() {
         return Err(crate::error::Error::ConfigError(
-            "OAuth token is empty. Please login to Claude Code first.".to_string(),
+            "OAuth credentials are empty. Please login to Claude Code first.".to_string(),
         ));
     }
 
-    // Import the OAuth token
-    // Note: We don't know the expiration time from keychain alone
-    // Users should refresh tokens periodically
-    let description = Some(format!("Imported from Claude Code on {}", chrono::Utc::now().format("%Y-%m-%d")));
+    // Parse JSON to extract access token and expiration
+    let credentials: serde_json::Value = serde_json::from_str(&credentials_json)
+        .map_err(|e| crate::error::Error::ConfigError(format!(
+            "Failed to parse Claude Code credentials: {}", e
+        )))?;
 
-    let profile = ProfileManager::add_oauth(&profile_name, description, &oauth_token, None)?;
+    let oauth_token = credentials["claudeAiOauth"]["accessToken"]
+        .as_str()
+        .ok_or_else(|| crate::error::Error::ConfigError(
+            "Could not find accessToken in Claude Code credentials.".to_string()
+        ))?
+        .to_string();
+
+    // Extract refresh token
+    let refresh_token = credentials["claudeAiOauth"]["refreshToken"]
+        .as_str()
+        .ok_or_else(|| crate::error::Error::ConfigError(
+            "Could not find refreshToken in Claude Code credentials.".to_string()
+        ))?
+        .to_string();
+
+    // Parse expiration time (in milliseconds since epoch)
+    let expires_at = credentials["claudeAiOauth"]["expiresAt"]
+        .as_i64()
+        .and_then(|ms| {
+            chrono::DateTime::from_timestamp(ms / 1000, ((ms % 1000) * 1_000_000) as u32)
+        });
+
+    // Extract subscription type if available
+    let subscription_type = credentials["claudeAiOauth"]["subscriptionType"]
+        .as_str()
+        .unwrap_or("unknown");
+
+    // Import the OAuth token
+    let description = Some(format!(
+        "Imported from Claude Code ({}) on {}",
+        subscription_type,
+        chrono::Utc::now().format("%Y-%m-%d")
+    ));
+
+    let profile = ProfileManager::add_oauth(&profile_name, description, &oauth_token, expires_at)?;
+
+    // Store refresh token in keychain
+    crate::core::keychain::store_refresh_token(&profile_name, &refresh_token)?;
 
     println!("✓ OAuth token imported successfully");
     println!("  Profile: {}", profile.name);
     println!("  Type: {}", profile.credential_type);
+    println!("  Subscription: {}", subscription_type);
     println!("  Created: {}", profile.created_at.to_rfc3339());
+
+    if let Some(exp) = expires_at {
+        println!("  Expires: {}", exp.to_rfc3339());
+
+        let now = chrono::Utc::now();
+        let duration = exp.signed_duration_since(now);
+        let days = duration.num_days();
+
+        if days > 0 {
+            println!("  Valid for: {} days", days);
+        } else {
+            println!("  Status: ⚠️  Token may be expired or expiring soon");
+        }
+    }
+
     println!();
     println!("Note: OAuth tokens expire periodically. You may need to re-import them.");
     println!("      Run 'claude /login' in Claude Code when your token expires.");

@@ -4,6 +4,7 @@ use keyring::Entry;
 
 const SERVICE_NAME: &str = "claude-vault";
 const OAUTH_SERVICE_NAME: &str = "claude-vault-oauth";
+const REFRESH_TOKEN_SERVICE_NAME: &str = "claude-vault-oauth-refresh";
 
 /// Store credential in system keychain
 pub fn store(profile: &str, credential: &str) -> Result<()> {
@@ -101,8 +102,57 @@ pub fn delete_oauth(profile: &str) -> Result<()> {
 pub fn delete_by_type(profile: &str, cred_type: CredentialType) -> Result<()> {
     match cred_type {
         CredentialType::ApiKey => delete(profile),
-        CredentialType::OAuth => delete_oauth(profile),
+        CredentialType::OAuth => {
+            delete_oauth(profile)?;
+            // Also try to delete refresh token (ignore error if not exists)
+            let _ = delete_refresh_token(profile);
+            Ok(())
+        }
     }
+}
+
+/// Store refresh token in system keychain
+pub fn store_refresh_token(profile: &str, token: &str) -> Result<()> {
+    if token.is_empty() {
+        return Err(Error::ConfigError("Refresh token cannot be empty".to_string()));
+    }
+
+    let entry = Entry::new(REFRESH_TOKEN_SERVICE_NAME, profile)
+        .map_err(|e| Error::KeychainError(e.to_string()))?;
+
+    entry
+        .set_password(token)
+        .map_err(|e| Error::KeychainError(e.to_string()))?;
+
+    Ok(())
+}
+
+/// Retrieve refresh token from system keychain
+pub fn get_refresh_token(profile: &str) -> Result<String> {
+    let entry = Entry::new(REFRESH_TOKEN_SERVICE_NAME, profile)
+        .map_err(|e| Error::KeychainError(e.to_string()))?;
+
+    let token = entry.get_password().map_err(|e| {
+        Error::KeychainError(format!("Failed to get refresh token for profile '{}': {}", profile, e))
+    })?;
+
+    if token.is_empty() {
+        return Err(Error::KeychainError("Refresh token is empty".to_string()));
+    }
+
+    Ok(token)
+}
+
+/// Delete refresh token from system keychain
+pub fn delete_refresh_token(profile: &str) -> Result<()> {
+    let entry = Entry::new(REFRESH_TOKEN_SERVICE_NAME, profile)
+        .map_err(|e| Error::KeychainError(e.to_string()))?;
+
+    entry
+        .delete_password()
+        .map_err(|e| Error::KeychainError(e.to_string()))?;
+
+    Ok(())
 }
 
 /// Validate Claude API key format

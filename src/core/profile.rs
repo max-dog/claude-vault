@@ -26,7 +26,7 @@ impl ProfileManager {
         Ok(profile)
     }
 
-    /// Add a new profile with OAuth token
+    /// Add a new profile with OAuth token (or update if exists)
     pub fn add_oauth(
         name: &str,
         description: Option<String>,
@@ -37,23 +37,44 @@ impl ProfileManager {
 
         let mut config = config::load()?;
 
-        let mut profile = Profile::new_with_type(
-            name.to_string(),
-            description,
-            CredentialType::OAuth,
-        );
+        // Check if profile already exists
+        if config.profile_exists(name) {
+            // Update existing profile
+            if let Some(existing) = config.find_profile_mut(name) {
+                existing.description = description;
+                existing.credential_type = CredentialType::OAuth;
+                existing.expires_at = expires_at;
+                existing.touch(); // Update last_used timestamp
+            }
 
-        profile.expires_at = expires_at;
+            // Store OAuth token in keychain (overwrites existing)
+            keychain::store_oauth(name, oauth_token)?;
 
-        config.add_profile(profile.clone())?;
+            // Save config
+            config::save(&config)?;
 
-        // Store OAuth token in keychain
-        keychain::store_oauth(name, oauth_token)?;
+            // Return updated profile
+            Ok(config.find_profile(name).unwrap().clone())
+        } else {
+            // Create new profile
+            let mut profile = Profile::new_with_type(
+                name.to_string(),
+                description,
+                CredentialType::OAuth,
+            );
 
-        // Save config
-        config::save(&config)?;
+            profile.expires_at = expires_at;
 
-        Ok(profile)
+            config.add_profile(profile.clone())?;
+
+            // Store OAuth token in keychain
+            keychain::store_oauth(name, oauth_token)?;
+
+            // Save config
+            config::save(&config)?;
+
+            Ok(profile)
+        }
     }
 
     /// Remove a profile

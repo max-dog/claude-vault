@@ -271,6 +271,7 @@ cargo run -- list
 - [x] `env` command for shell integration
 - [x] Shell completion scripts (Bash, Zsh, Fish)
 - [x] OAuth token support for subscription accounts
+- [x] Automatic token refresh for OAuth tokens
 - [ ] Linux support (for OAuth tokens)
 - [ ] Windows support
 - [ ] Homebrew formula

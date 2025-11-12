@@ -1,5 +1,14 @@
 # Phase 6: OAuth Token Support
 
+## Status
+
+- ✅ **Phase 6.1**: Core OAuth Support (COMPLETED)
+- ✅ **Auto-refresh**: Token auto-refresh implemented (COMPLETED)
+- ⏳ **Phase 6.2**: Environment Variable Support (PLANNED)
+- ⏳ **Phase 6.3**: Linux Support (PLANNED)
+- ⏳ **Phase 6.4**: Independent OAuth Flow (FUTURE)
+- ⏳ **Phase 6.5**: Token Management UI (FUTURE)
+
 ## Overview
 
 Add support for Claude.ai subscription (Pro/Max) OAuth tokens in addition to API keys, enabling users without API keys to use claude-vault.
