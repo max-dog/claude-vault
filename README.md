@@ -23,7 +23,7 @@
 ### From Source
 
 ```bash
-git clone https://github.com/max-dog/claude-vault.git
+git clone https://github.com/rtzr/claude-vault.git
 cd claude-vault
 cargo build --release
 sudo mv target/release/claude-vault /usr/local/bin/

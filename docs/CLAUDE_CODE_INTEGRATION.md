@@ -392,7 +392,7 @@ jobs:
 
       - name: Install claude-vault
         run: |
-          curl -L https://github.com/max-dog/claude-vault/releases/latest/download/claude-vault-x86_64-unknown-linux-gnu -o /usr/local/bin/claude-vault
+          curl -L https://github.com/rtzr/claude-vault/releases/latest/download/claude-vault-x86_64-unknown-linux-gnu -o /usr/local/bin/claude-vault
           chmod +x /usr/local/bin/claude-vault
 
       - name: Setup profile

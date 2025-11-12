@@ -316,7 +316,7 @@ jobs:
 
       - name: Install claude-vault
         run: |
-          curl -L https://github.com/max-dog/claude-vault/releases/latest/download/claude-vault-x86_64-unknown-linux-gnu -o claude-vault
+          curl -L https://github.com/rtzr/claude-vault/releases/latest/download/claude-vault-x86_64-unknown-linux-gnu -o claude-vault
           chmod +x claude-vault
           sudo mv claude-vault /usr/local/bin/
 
@@ -337,7 +337,7 @@ jobs:
 test:
   image: node:18
   before_script:
-    - curl -L https://github.com/max-dog/claude-vault/releases/latest/download/claude-vault-x86_64-unknown-linux-gnu -o /usr/local/bin/claude-vault
+    - curl -L https://github.com/rtzr/claude-vault/releases/latest/download/claude-vault-x86_64-unknown-linux-gnu -o /usr/local/bin/claude-vault
     - chmod +x /usr/local/bin/claude-vault
     - echo "$CLAUDE_API_KEY" | claude-vault add ci
     - claude-vault default ci
@@ -351,7 +351,7 @@ test:
 FROM node:18
 
 # Install claude-vault
-RUN curl -L https://github.com/max-dog/claude-vault/releases/latest/download/claude-vault-x86_64-unknown-linux-gnu -o /usr/local/bin/claude-vault && \
+RUN curl -L https://github.com/rtzr/claude-vault/releases/latest/download/claude-vault-x86_64-unknown-linux-gnu -o /usr/local/bin/claude-vault && \
     chmod +x /usr/local/bin/claude-vault
 
 # Setup profile at runtime

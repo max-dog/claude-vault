@@ -5,7 +5,7 @@ edition = "2021"
 authors = ["Ramos Choi <68529402+max-dog@users.noreply.github.com>"]
 license = "MIT"
 description = "Secure credential management for Claude API"
-repository = "https://github.com/max-dog/claude-vault"
+repository = "https://github.com/rtzr/claude-vault"
 
 [dependencies]
 clap = { version = "4.4", features = ["derive", "cargo"] }

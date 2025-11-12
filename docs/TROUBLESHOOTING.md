@@ -451,7 +451,7 @@ claude-vault detect
 ```
 
 4. **File an issue:**
-- GitHub: https://github.com/max-dog/claude-vault/issues
+- GitHub: https://github.com/rtzr/claude-vault/issues
 - Include:
   - OS version
   - `claude-vault --version` output

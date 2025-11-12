@@ -369,7 +369,7 @@ claude-vault init correct-profile
 
 ### How do I report a bug?
 
-**GitHub Issues:** https://github.com/max-dog/claude-vault/issues
+**GitHub Issues:** https://github.com/rtzr/claude-vault/issues
 
 **Include:**
 - OS version: `sw_vers` (macOS)
@@ -389,7 +389,7 @@ claude-vault init correct-profile
 
 **Not currently.** The tool is focused and purposely simple.
 
-Feature requests welcome at: https://github.com/max-dog/claude-vault/issues
+Feature requests welcome at: https://github.com/rtzr/claude-vault/issues
 
 ### Does claude-vault support credential rotation?
 
@@ -454,9 +454,9 @@ cp ~/.claude-vault/config.toml backup.toml
    - [Best Practices](BEST_PRACTICES.md)
    - [Claude Code Integration](CLAUDE_CODE_INTEGRATION.md)
 
-2. **GitHub Issues:** https://github.com/max-dog/claude-vault/issues
+2. **GitHub Issues:** https://github.com/rtzr/claude-vault/issues
 
-3. **Discussions:** https://github.com/max-dog/claude-vault/discussions
+3. **Discussions:** https://github.com/rtzr/claude-vault/discussions
 
 ### How can I contribute?
 
