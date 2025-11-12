@@ -192,16 +192,35 @@ fn handle_exec(profile_opt: Option<String>, command: Vec<String>) -> Result<()> 
         ));
     }
 
-    let status = Command::new(&command[0])
-        .args(&command[1..])
-        .env("ANTHROPIC_API_KEY", credential)
-        .status()
-        .map_err(|e| {
-            crate::error::Error::ConfigError(format!("Failed to execute command: {}", e))
-        })?;
+    // For OAuth profiles, also switch Claude Code keychain
+    let exit_code = if profile.credential_type == crate::types::CredentialType::OAuth {
+        // Use with_claude_code_profile to automatically backup and restore
+        crate::core::with_claude_code_profile(&profile_name, || {
+            let status = Command::new(&command[0])
+                .args(&command[1..])
+                .env("ANTHROPIC_API_KEY", &credential)
+                .status()
+                .map_err(|e| {
+                    crate::error::Error::ConfigError(format!("Failed to execute command: {}", e))
+                })?;
+
+            Ok(status.code().unwrap_or(1))
+        })?
+    } else {
+        // For API key profiles, just set environment variable
+        let status = Command::new(&command[0])
+            .args(&command[1..])
+            .env("ANTHROPIC_API_KEY", credential)
+            .status()
+            .map_err(|e| {
+                crate::error::Error::ConfigError(format!("Failed to execute command: {}", e))
+            })?;
+
+        status.code().unwrap_or(1)
+    };
 
     // Exit with the same code as the child process
-    std::process::exit(status.code().unwrap_or(1));
+    std::process::exit(exit_code);
 }
 
 fn handle_env(profile_opt: Option<String>) -> Result<()> {

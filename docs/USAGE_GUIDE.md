@@ -138,6 +138,43 @@ claude-vault exec --profile personal zsh
 # All commands in this session use personal profile
 ```
 
+### Claude Code Integration (OAuth Profiles)
+
+For OAuth subscription accounts, `claude-vault` automatically manages Claude Code's keychain:
+
+```bash
+# Scenario: You have multiple Claude subscriptions
+# - rtzr (max subscription)
+# - personal (pro subscription)
+
+# Use rtzr account with Claude Code
+claude-vault exec --profile rtzr claude "Analyze this code"
+# ✅ Automatically switches Claude Code keychain to rtzr
+# ✅ Executes command with rtzr (max) subscription
+# ✅ Restores original keychain after execution
+
+# Use personal account with Claude Code
+claude-vault exec --profile personal claude "Generate unit tests"
+# ✅ Automatically switches Claude Code keychain to personal
+# ✅ Executes command with personal (pro) subscription
+# ✅ Restores original keychain after execution
+
+# No manual /logout and /login required!
+```
+
+**How it works:**
+
+1. **Before execution**: Backs up current Claude Code keychain
+2. **During execution**: Switches to selected profile's OAuth token
+3. **After execution**: Restores original keychain (even on error)
+
+**Benefits:**
+
+- Seamlessly switch between multiple Claude subscription accounts
+- No need to manually run `claude /logout` and `claude /login`
+- Original Claude Code login is preserved
+- Works with any command that uses Claude Code
+
 ### Temporary Profile Override
 
 ```bash

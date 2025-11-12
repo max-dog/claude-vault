@@ -7,10 +7,12 @@
 ## Features
 
 - 🔐 **Secure Storage**: API keys and OAuth tokens stored in macOS Keychain (Linux/Windows support coming soon)
-- 🎫 **OAuth Support**: Import and manage OAuth tokens from Claude Code for subscription accounts (✨ NEW!)
+- 🎫 **OAuth Support**: Import and manage OAuth tokens from Claude Code for subscription accounts
 - 🔄 **Multiple Profiles**: Manage personal, work, and project-specific Claude accounts
 - 🎯 **Auto-Detection**: Automatically detect profiles from `.claude-profile` files
 - ⚡ **Command Execution**: Run commands with profile credentials via `exec` and `env`
+- 🔀 **Claude Code Integration**: Automatically switches Claude Code keychain to use selected profile (✨ NEW!)
+- 🔄 **Auto Token Refresh**: Automatically refreshes expired OAuth tokens
 - 🐚 **Shell Completion**: Tab completion for Bash, Zsh, and Fish
 - ✨ **Simple CLI**: Intuitive commands for profile management
 - 📦 **Smart Caching**: Performance-optimized profile detection with intelligent caching
@@ -178,6 +180,22 @@ claude-vault exec --profile work claude --model sonnet "Hello world"
 claude-vault exec npm run test
 ```
 
+**🔀 Claude Code Integration:**
+
+When using OAuth profiles, `claude-vault exec` automatically switches Claude Code's keychain to use the selected profile:
+
+```bash
+# Using rtzr (max) profile with Claude Code
+claude-vault exec --profile rtzr claude "Hello from max subscription!"
+
+# Using personal (pro) profile with Claude Code
+claude-vault exec --profile personal claude "Hello from pro subscription!"
+
+# After execution, automatically restores original Claude Code keychain
+```
+
+This allows you to seamlessly switch between multiple Claude subscription accounts without manual `/logout` and `/login`.
+
 ### Export Environment Variables
 
 ```bash
@@ -272,6 +290,7 @@ cargo run -- list
 - [x] Shell completion scripts (Bash, Zsh, Fish)
 - [x] OAuth token support for subscription accounts
 - [x] Automatic token refresh for OAuth tokens
+- [x] Claude Code keychain integration (automatic profile switching)
 - [ ] Linux support (for OAuth tokens)
 - [ ] Windows support
 - [ ] Homebrew formula

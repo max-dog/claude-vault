@@ -4,10 +4,44 @@
 
 - ✅ **Phase 6.1**: Core OAuth Support (COMPLETED)
 - ✅ **Auto-refresh**: Token auto-refresh implemented (COMPLETED)
+- ✅ **Claude Code Integration**: Automatic keychain switching (COMPLETED)
 - ⏳ **Phase 6.2**: Environment Variable Support (PLANNED)
 - ⏳ **Phase 6.3**: Linux Support (PLANNED)
 - ⏳ **Phase 6.4**: Independent OAuth Flow (FUTURE)
 - ⏳ **Phase 6.5**: Token Management UI (FUTURE)
+
+## Completed Features
+
+### Claude Code Keychain Integration
+
+**Implementation**: `src/core/claude_code.rs`
+
+Automatically switches Claude Code's keychain to use selected profile during `exec` command:
+
+```rust
+pub fn with_profile<F, R>(profile_name: &str, f: F) -> Result<R>
+where F: FnOnce() -> Result<R>
+```
+
+**Features**:
+- Backup current Claude Code keychain before execution
+- Switch to selected profile's OAuth token
+- Execute command with switched keychain
+- Restore original keychain after execution (even on error)
+- RAII pattern ensures cleanup in all cases
+
+**User Experience**:
+```bash
+# No need for manual /logout and /login
+claude-vault exec --profile rtzr claude "Hello"
+claude-vault exec --profile personal claude "Hello"
+```
+
+**Technical Details**:
+- Service: "Claude Code-credentials"
+- Account: Current username ($USER)
+- JSON format with accessToken, refreshToken, expiresAt, subscriptionType
+- Automatic detection from profile description (max/pro)
 
 ## Overview
 
